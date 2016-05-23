@@ -51,22 +51,26 @@ Post.prototype.save = function(callback) {
   });
 };
 
-Post.get = function(name, callback) {
-  var option = {};
-  if(name){
-      option.name = name;
-  }
-  postModel.find(option, function (err, posts) {
-    if (err) {
-      return callback(err);
-    }
-    /*
-    posts.forEach(function (doc) {
-        doc.post = markdown.toHTML(doc.post);
+Post.getAll = function(callback) {
+
+    postModel.find({}, function (err, posts) {
+
+        /*
+        posts.forEach(function (doc) {
+            doc.post = markdown.toHTML(doc.post);
+        });
+        */
+        callback(err, posts);
     });
-    */
-    callback(null, posts);
-  });
 };
+
+//keep the same with getAll, the the index.ejs can by reused
+Post.getOne = function(id, callback){
+    postModel.find({_id: id}, callback);//findById will return doc  find will return docs
+}
+
+Post.getByUser = function(userName, callback){
+    postModel.find({name: userName}, callback);
+}
 
 module.exports = Post;

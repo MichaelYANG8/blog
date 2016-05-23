@@ -6,8 +6,9 @@ var Post = require("../models/post");
 var formidable = require("formidable");
 
 function getIndex(req, res){
-   Post.get(null, function(err, posts){
+   Post.getAll(function(err, posts){
       if (err) {
+        console.error(err);
         posts = [];
       } 
       res.render('index', {
@@ -176,6 +177,41 @@ function postUpload(req, res){
     });
 }
 
+function getArtical(req, res){
+    Post.getOne(req.query.id, function(err, posts){
+        if(err){
+          console.error(err);
+          posts = [];
+        }
+        res.render('index', {
+       // myurl: 'index', //myrul error caused by c9 env issue
+        title: posts[0].title,
+        posts: posts,
+        user: req.session.user,
+        success: req.flash('success').toString(),
+        error: req.flash('error').toString()
+      }); 
+        
+    });
+}
+
+function getUser(req, res){
+    Post.getByUser(req.query.name, function(err, posts){
+      if (err) {
+        console.error(err);
+        posts = [];
+      } 
+      res.render('index', {
+       // myurl: 'index', //myrul error caused by c9 env issue
+        title: req.query.name,
+        posts: posts,
+        user: req.session.user,
+        success: req.flash('success').toString(),
+        error: req.flash('error').toString()
+      }); 
+    })
+}
+
 function route(app){
     app.route('/')
         .get(getIndex);
@@ -205,6 +241,12 @@ function route(app){
     app.route('/uploadimg')
        .post(checkLogin)
        .post(postUpload);
+    
+    app.route('/artical')
+       .get(getArtical);
+       
+    app.route('/user')
+        .get(getUser);
 }
 
 module.exports = route;
