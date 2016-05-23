@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var User = require("../models/user");
 var Post = require("../models/post");
 var formidable = require("formidable");
+var fs = require("fs");
 
 function getIndex(req, res){
    Post.getAll(function(err, posts){
@@ -212,6 +213,35 @@ function getUser(req, res){
     })
 }
 
+function getDelete(req, res){
+  Post.getOne(req.query.id, function(err, posts){
+    if(err){
+      throw err;
+    }
+    if(!req.session.user || posts[0].name != req.session.user.name){
+        req.flash('error', '权限不足');
+        return res.redirect('/');//登出成功后跳转到主页
+    }
+    
+    Post.deleteOne(req.query.id, function(err, post){
+      if (err) {
+        console.error(err);
+        post = {};
+      } 
+      
+      //try to remove the uploaded image file here
+      //but even done, there is still some issue with the uploaded files at the editor
+      /*
+      if(post){
+        console.log(post.post);
+      }
+      */
+      res.redirect('/');
+    })
+  })
+ 
+}
+
 function route(app){
     app.route('/')
         .get(getIndex);
@@ -236,7 +266,7 @@ function route(app){
         .get(checkLogin)
         .get(getPost)
         .post(checkLogin)
-        .post(postPost)
+        .post(postPost);
         
     app.route('/uploadimg')
        .post(checkLogin)
@@ -247,6 +277,9 @@ function route(app){
        
     app.route('/user')
         .get(getUser);
+        
+    app.route('/delete')
+        .get(getDelete);
 }
 
 module.exports = route;

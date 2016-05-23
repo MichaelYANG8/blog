@@ -73,4 +73,8 @@ Post.getByUser = function(userName, callback){
     postModel.find({name: userName}, callback);
 }
 
+Post.deleteOne = function(id, callback){
+    postModel.findOneAndRemove({_id: id}, callback);
+}
+
 module.exports = Post;
