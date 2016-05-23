@@ -60,9 +60,11 @@ Post.get = function(name, callback) {
     if (err) {
       return callback(err);
     }
+    /*
     posts.forEach(function (doc) {
         doc.post = markdown.toHTML(doc.post);
     });
+    */
     callback(null, posts);
   });
 };

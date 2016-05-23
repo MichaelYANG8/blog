@@ -2,8 +2,8 @@
 
 var crypto = require('crypto');
 var User = require("../models/user");
-var Post = require("../models/post")
-
+var Post = require("../models/post");
+var formidable = require("formidable");
 
 function getIndex(req, res){
    Post.get(null, function(err, posts){
@@ -152,7 +152,28 @@ function postPost(req, res){
       res.redirect('/');//发表成功跳转到主页
     });
 }
-
+function postUpload(req, res){
+  
+    var form = formidable.Incomingform();
+    form.keepExtensions = true;
+    form.uploadDir = __dirname + '/../public/upload';
+    
+    form.parse(req, function (err, fields, files) {
+        if (err) {
+            throw err;
+        }
+  
+        var image = files.imgFile;
+        var path = image.path;
+        var url = '/upload' + path.substr(path.lastIndexOf('/'), path.length);
+  
+        var info = {
+            "error": 0,
+            "url": url
+        };
+        res.send(info);
+    });
+}
 
 function route(app){
     app.route('/')
@@ -179,6 +200,10 @@ function route(app){
         .get(getPost)
         .post(checkLogin)
         .post(postPost)
+        
+    app.route('/upload')
+       .post(checkLogin)
+       .post(postUpload);
 }
 
 module.exports = route;
