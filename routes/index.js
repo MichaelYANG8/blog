@@ -11,6 +11,7 @@ function getIndex(req, res){
         posts = [];
       } 
       res.render('index', {
+       // myurl: 'index', //myrul error caused by c9 env issue
         title: '主页',
         posts: posts,
         user: req.session.user,
@@ -154,7 +155,7 @@ function postPost(req, res){
 }
 function postUpload(req, res){
   
-    var form = formidable.Incomingform();
+    var form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.uploadDir = __dirname + '/../public/upload';
     
@@ -201,7 +202,7 @@ function route(app){
         .post(checkLogin)
         .post(postPost)
         
-    app.route('/upload')
+    app.route('/uploadimg')
        .post(checkLogin)
        .post(postUpload);
 }
