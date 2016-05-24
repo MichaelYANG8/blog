@@ -9,7 +9,7 @@ var fs = require("fs");
 function getIndex(req, res){
    Post.getAll(function(err, posts){
       if (err) {
-        console.error(err);
+        req.flash('error', err);
         posts = [];
       } 
       res.render('index', {
@@ -88,7 +88,7 @@ function postReg(req, res){
     User.get(newUser.name, function(err,user){
       
         if(err){
-            req.flash(err);
+            req.flash('error', err);
             return res.redirect('/');
         }
         
@@ -99,7 +99,7 @@ function postReg(req, res){
         
         newUser.save(function(err, user){
             if(err){
-                req.flash(err);
+                req.flash('error', err);
                 return res.redirect('/');
             }
             req.session.user = user;//用户信息存入 session
@@ -121,7 +121,7 @@ function getLogout(req, res){
 function checkLogin(req, res, next){
     if(!req.session.user){
         req.flash('error', '未登录');
-        res.redirect("/login");
+        return res.redirect("/login"); //return or not?
     }
     next();
 }
@@ -129,7 +129,7 @@ function checkLogin(req, res, next){
 function checkLogout(req, res, next){
     if(req.session.user){
         req.flash('error', '已登录');
-        res.redirect('back');
+        return res.redirect('back');  //return or not?
     }
     next();
 }
@@ -144,8 +144,9 @@ function getPost(req, res){
 }
 
 function postPost(req, res){
-    var currentUser = req.session.user,
-        post = new Post(currentUser.name, req.body.title, req.body.post);
+    var currentUser = req.session.user;
+    var post = new Post(currentUser.name, req.body.title, req.body.post);
+    
     post.save(function (err) {
       if (err) {
         req.flash('error', err); 
@@ -163,7 +164,8 @@ function postUpload(req, res){
     
     form.parse(req, function (err, fields, files) {
         if (err) {
-            throw err;
+            req.flash('error', err);
+            return res.redirect('/');
         }
   
         var image = files.imgFile;
@@ -181,8 +183,8 @@ function postUpload(req, res){
 function getArtical(req, res){
     Post.getOne(req.query.id, function(err, posts){
         if(err){
-          console.error(err);
-          posts = [];
+            req.flash('error', err);
+            return res.redirect('/');
         }
         res.render('index', {
        // myurl: 'index', //myrul error caused by c9 env issue
@@ -199,8 +201,8 @@ function getArtical(req, res){
 function getUser(req, res){
     Post.getByUser(req.query.name, function(err, posts){
       if (err) {
-        console.error(err);
-        posts = [];
+          req.flash('error', err);
+          return res.redirect('/');
       } 
       res.render('index', {
        // myurl: 'index', //myrul error caused by c9 env issue
@@ -214,33 +216,71 @@ function getUser(req, res){
 }
 
 function getDelete(req, res){
-  Post.getOne(req.query.id, function(err, posts){
-    if(err){
-      throw err;
-    }
-    if(!req.session.user || posts[0].name != req.session.user.name){
-        req.flash('error', '权限不足');
-        return res.redirect('/');//登出成功后跳转到主页
-    }
-    
-    Post.deleteOne(req.query.id, function(err, post){
-      if (err) {
-        console.error(err);
-        post = {};
-      } 
-      
-      //try to remove the uploaded image file here
-      //but even done, there is still some issue with the uploaded files at the editor
-      /*
-      if(post){
-        console.log(post.post);
-      }
-      */
-      res.redirect('/');
+    Post.getOne(req.query.id, function(err, posts){
+        if(err){
+            req.flash('error', err);
+            return res.redirect('/');
+        }
+        if(!req.session.user || posts[0].name != req.session.user.name){
+            req.flash('error', '权限不足');
+            return res.redirect('/');//登出成功后跳转到主页
+        }
+        
+        Post.deleteOne(req.query.id, function(err, post){
+          if (err) {
+            req.flash('error', err);
+            return res.redirect('/');
+          } 
+          
+          //try to remove the uploaded image file here
+          //but even done, there is still some issue with the uploaded files at the editor
+          /*
+          if(post){
+            console.log(post.post);
+          }
+          */
+          res.redirect('/');
+        })
     })
-  })
  
 }
+
+function getEdit(req, res){
+  
+  Post.getOne(req.query.id, function(err, posts){
+    if(err){
+        req.flash('error', err);
+        return res.redirect('/');
+    }
+    
+    res.render('edit', {
+      title: "编辑",
+      post: posts[0],
+      user: req.session.user,
+      success: req.flash('success').toString(),
+      error: req.flash('error').toString()
+      
+    })
+  })
+}
+
+function postEdit(req, res){
+  
+    var currentUser = req.session.user;
+    var post = new Post(currentUser.name, req.body.title, req.body.post);
+    
+    post.update(req.query.id, function (err) {
+      if (err) {
+        req.flash('error', err); 
+        return res.redirect('/');
+      }
+      req.flash('success', '编辑成功!');
+      res.redirect('/');//编辑成功跳转到主页
+    });
+}
+
+
+
 
 function route(app){
     app.route('/')
@@ -280,6 +320,10 @@ function route(app){
         
     app.route('/delete')
         .get(getDelete);
+        
+    app.route('/edit')
+        .get(getEdit)
+        .post(postEdit);
 }
 
 module.exports = route;

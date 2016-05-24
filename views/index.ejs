@@ -9,6 +9,7 @@
     日期：<%= post.time.minute %>
     <% if(user && post.name == user.name) { %>
       |<a href="/delete?id=<%= post._id %>">删除</a>
+      |<a href="/edit?id=<%= post._id %>">编辑</a>
     <% } %>
     </p>
     <p><%- post.post %></p>
