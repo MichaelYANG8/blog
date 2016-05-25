@@ -19,6 +19,12 @@ function getIndex(req, res){
         user: req.session.user,
         success: req.flash('success').toString(),
         error: req.flash('error').toString()
+      }, function(err, html){
+        if(err){
+          console.error(err.message);
+          html = err.message;
+        }
+        res.end(html);
       }); 
    });
 }
@@ -266,6 +272,16 @@ function getEdit(req, res){
 
 function postEdit(req, res){
   
+  Post.getOne(req.query.id, function(err, posts){
+    if(err){
+        req.flash('error', err);
+        return res.redirect('/');
+    }
+    if(!req.session.user || posts[0].name != req.session.user.name){
+        req.flash('error', '权限不足');
+        return res.redirect('/');//登出成功后跳转到主页
+    }
+        
     var currentUser = req.session.user;
     var post = new Post(currentUser.name, req.body.title, req.body.post);
     
@@ -277,6 +293,7 @@ function postEdit(req, res){
       req.flash('success', '编辑成功!');
       res.redirect('/');//编辑成功跳转到主页
     });
+  });
 }
 
 

@@ -1,0 +1,46 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title Blog
+    link(rel="stylesheet", href="/stylesheets/style.css")
+    
+    if (title == '新博客' || title =='编辑')
+      script(charset='utf-8', src='/KindEditor/kindeditor-all-min.js')
+      script(charset='utf-8', src='/KindEditor/lang/zh-CN.js')
+      script.
+        var editor;
+        KindEditor.ready(function(K) {
+          editor = K.create('textarea', {
+          allowImageUpload : true,
+          uploadJson: '/uploadimg',
+          items : [
+            'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic',
+            'underline', 'removeformat', '|', 'justifyleft', 'justifycenter', 'justifyright',
+            'insertorderedlist', 'insertunorderedlist', '|', 'emoticons', 'image', 'link']
+          });
+        });
+
+  body
+    header
+      h1= locals.title
+    
+    nav
+      span
+        a(title="home", href="/") 主页
+      if user
+        span
+          a(title="post", href="/post") 发表
+        span
+          a(title="logout", href="/logout") 退出
+      else
+        span
+          a(title="login", href="/login") 登录
+        span
+          a(title="reg", href="/reg") 注册
+          
+     
+    article
+      div #{success}
+      div #{error}
+

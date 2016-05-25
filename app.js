@@ -22,8 +22,11 @@ var app = express();
 app.set('port', settings.port);
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'jade_views'));
+app.set('view engine', 'jade');
+
+//app.set('views', path.join(__dirname, 'ejs_views'));
+//app.set('view engine', 'ejs');
 
 
 
