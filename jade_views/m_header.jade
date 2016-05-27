@@ -13,7 +13,7 @@ html
         KindEditor.ready(function(K) {
           editor = K.create('textarea', {
           allowImageUpload : true,
-          uploadJson: '/uploadimg',
+          uploadJson: '/m/uploadimg',
           items : [
             'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic',
             'underline', 'removeformat', '|', 'justifyleft', 'justifycenter', 'justifyright',
@@ -27,20 +27,19 @@ html
     
     nav
       span
-        a(title="home", href="/") 主页
+        a(title="home", href="/m") 主页
       if user
         span
-          a(title="post", href="/post") 发表
+          a(title="post", href="/m/post") 发表
         span
-          a(title="logout", href="/logout") 退出
+          a(title="logout", href="/m/logout") 退出
       else
         span
-          a(title="login", href="/login") 登录
+          a(title="login", href="/m/login") 登录
         span
-          a(title="reg", href="/reg") 注册
+          a(title="reg", href="/m/reg") 注册
           
      
     article
       div #{success}
       div #{error}
-

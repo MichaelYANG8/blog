@@ -1,0 +1,40 @@
+doctype html
+html(lang='en')
+  include u_header.jade
+  body
+    include u_navbar.jade
+    
+    // Page Header
+    // Set your background image for this header on the line below.
+    header.intro-header(style="background-image: url('img/home-bg.jpg')")
+      .container
+        .row
+          .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+            .site-heading
+              h1 这    里
+              hr.small
+              span.subheading 是一个博客，也是一个梦想
+    
+
+    // Main Content
+    .container
+      .row
+        .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+          each post in posts
+            .post-preview
+              a(href='/artical?id=' + post._id)
+                h2.post-title
+                  | #{post.title}
+                h3.post-subtitle
+                  | #{post.subtitle}
+              p.post-meta
+                | Posted by 
+                a(href='/usr?id=/' + post.name) #{post.name}
+                |  on #{post.time.minute}
+            hr
+          // Pager
+          ul.pager
+            li.next
+              a(href='#') Older Posts &rarr;
+    
+    include u_footer.jade

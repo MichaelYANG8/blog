@@ -1,0 +1,27 @@
+doctype html
+html(lang='en')
+  include u_header.jade
+  body
+    include u_navbar.jade
+    
+    // Page Header
+    // Set your background image for this header on the line below.
+    header.intro-header(style="background-image: url('img/post-bg.jpg')")
+      .container
+        .row
+          .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+            .post-heading
+              h1 #{post.title}
+              h2.subheading #{post.subtitle}
+              span.meta 
+                |Posted By  
+                a(href="") #{post.name}
+                |   on #{post.time.minute}
+              
+    article
+      .container
+          .row
+            .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1 !{post.post}
+
+    
+    include u_footer.jade

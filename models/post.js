@@ -7,6 +7,7 @@ var postSchema = new mongoose.Schema({
   name: String,
   time: Object,
   title: String,
+  subtitle: String,
   post: String
 }, {
   collection: 'posts' 
@@ -16,9 +17,10 @@ var postModel = mongoose.model('Post', postSchema);
 
 
 //Post model
-function Post(name, title, post) {
+function Post(name, title,subtitle, post) {
   this.name = name;
   this.title = title;
+  this.subtitle = subtitle;
   this.post = post;
 }
 
@@ -38,6 +40,7 @@ Post.prototype.save = function(callback) {
       name: this.name,
       time: time,
       title: this.title,
+      subtitle: this.subtitle,
       post: this.post
   };
   var newPost = new postModel(post);
@@ -60,6 +63,7 @@ Post.prototype.update = function(id, callback){
       name: this.name,
       time: time,
       title: this.title,
+      subtitle: this.subtitle,
       post: this.post
   };
   
