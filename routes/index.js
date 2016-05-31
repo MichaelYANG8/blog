@@ -2,34 +2,46 @@
 
 var crypto = require('crypto');
 var User = require("../models/user");
-var Post = require("../models/post");
+var PostModel = require("../models/post");
 var formidable = require("formidable");
 var fs = require("fs");
 
-function getIndex(req, res){
-   Post.getAll(function(err, posts){
-      if (err) {
-        req.flash('error', err);
-        posts = [];
-      } 
+var findLimit = 4;
+
+function getIndexU(req, res){
+  
+  PostModel.find({}, null, {limit: findLimit, sort:{time: -1}} , findHandler);
+  
+  function findHandler(err, docs){
+    if (err) {
+      console.error(err);
+      docs = [];
+    } 
+    PostModel.count(function(err, number){
+      if(err){
+        console.error(err);
+      }
       res.render('u_index', {
-       // myurl: 'index', //myrul error caused by c9 env issue
-        title: '主页',
-        posts: posts,
-        user: req.session.user,
-        success: req.flash('success').toString(),
-        error: req.flash('error').toString()
-      }, function(err, html){
-        if(err){
-          console.error(err.message);
-          html = err.message;
-        }
-        res.end(html);
-      }); 
-   });
+                 title: '主页',
+                 posts: docs,
+                 end: (number <= docs.length),
+                 user: req.session.user,
+                 success: req.flash('success').toString(),
+                 error: req.flash('error').toString()
+                }, jadeHandler); 
+    });
+  }
+  
+  function jadeHandler(err, html){
+    if(err){
+      console.error(err.message);
+      html = err.message;
+    }
+    res.end(html);
+  }
 }
 
-function getAbout(req, res){
+function getAboutU(req, res){
     res.render('u_about', {
       title: '关于',
       user: req.session.user,
@@ -38,7 +50,7 @@ function getAbout(req, res){
    });
 }
 
-function getContact(req, res){
+function getContactU(req, res){
     res.render('u_contact', {
       title: '联系我们',
       user: req.session.user,
@@ -47,7 +59,22 @@ function getContact(req, res){
    });
 }
 
-
+function getArticalU(req, res){
+    PostModel.findById(req.query.id, function(err, post){
+        if(err){
+            req.flash('error', err);
+            return res.redirect('/');
+        }
+        res.render('u_post', {
+       // myurl: 'index', //myrul error caused by c9 env issue
+        post: post,
+        user: req.session.user,
+        success: req.flash('success').toString(),
+        error: req.flash('error').toString()
+      }); 
+        
+    });
+}
 
 function checkLogin(req, res, next){
     if(!req.session.user){
@@ -66,27 +93,32 @@ function checkLogout(req, res, next){
 }
 
 
-function getManageIndex(req, res){
-   Post.getAll(function(err, posts){
-      if (err) {
-        req.flash('error', err);
-        posts = [];
-      } 
-      res.render('m_index', {
-       // myurl: 'index', //myrul error caused by c9 env issue
-        title: '主页',
-        posts: posts,
-        user: req.session.user,
-        success: req.flash('success').toString(),
-        error: req.flash('error').toString()
-      }, function(err, html){
-        if(err){
-          console.error(err.message);
-          html = err.message;
-        }
-        res.end(html);
-      }); 
-   });
+function getIndex(req, res){
+  
+  PostModel.find({}, null, {sort:{time: -1}}, findHandler);
+  
+  function findHandler(err, docs){
+    if (err) {
+      req.flash('error', err);
+      docs = [];
+    } 
+    res.render('m_index', {
+               title: '主页',
+               posts: docs,
+               user: req.session.user,
+               success: req.flash('success').toString(),
+               error: req.flash('error').toString()
+              }, jadeHandler); 
+ 
+  }
+  
+  function jadeHandler(err, html){
+    if(err){
+      console.error(err.message);
+      html = err.message;
+    }
+    res.end(html);
+  }
 }
 
 
@@ -195,19 +227,40 @@ function getPost(req, res){
    }); 
 }
 
-function postPost(req, res){
-    var currentUser = req.session.user;
-    var post = new Post(currentUser.name, req.body.title, req.body.subtitle, req.body.post);
-    
-    post.save(function (err) {
-      if (err) {
-        req.flash('error', err); 
-        return res.redirect('/m/');
-      }
-      req.flash('success', '发布成功!');
-      res.redirect('/m/');//发表成功跳转到主页
-    });
+function getTime(){
+  var date = new Date();
+  //存储各种时间格式，方便以后扩展
+  return {
+      date: date,
+      year : date.getFullYear(),
+      month : date.getFullYear() + "-" + (date.getMonth() + 1),
+      day : date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
+      minute : date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + 
+      date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) 
+  }
 }
+
+function postPost(req, res){
+  var currentUser = req.session.user;
+  //要存入数据库的文档
+  var post = {
+      name: currentUser.name,
+      time: getTime(),
+      title: req.body.title,
+      subtitle: req.body.subtitle,
+      post: req.body.post
+  };
+  var newPost = new PostModel(post);
+  newPost.save(function (err) {
+    if (err) {
+      req.flash('error', err); 
+      return res.redirect('/m/');
+    }
+    req.flash('success', '发布成功!');
+    res.redirect('/m/');//发表成功跳转到主页
+  });
+}
+
 function postUpload(req, res){
   
     var form = new formidable.IncomingForm();
@@ -233,15 +286,15 @@ function postUpload(req, res){
 }
 
 function getArtical(req, res){
-    Post.getOne(req.query.id, function(err, posts){
+    PostModel.findById(req.query.id, function(err, post){
         if(err){
             req.flash('error', err);
             return res.redirect('/m/');
         }
         res.render('m_index', {
        // myurl: 'index', //myrul error caused by c9 env issue
-        title: posts[0].title,
-        posts: posts,
+        title: post.title,
+        posts: [post],
         user: req.session.user,
         success: req.flash('success').toString(),
         error: req.flash('error').toString()
@@ -251,7 +304,7 @@ function getArtical(req, res){
 }
 
 function getUser(req, res){
-    Post.getByUser(req.query.name, function(err, posts){
+    PostModel.find({name: req.query.name}, function(err, posts){
       if (err) {
           req.flash('error', err);
           return res.redirect('/m');
@@ -268,7 +321,7 @@ function getUser(req, res){
 }
 
 function getDelete(req, res){
-    Post.getOne(req.query.id, function(err, posts){
+    PostModel.findById(req.query.id, function(err, posts){
         if(err){
             req.flash('error', err);
             return res.redirect('/m');
@@ -278,7 +331,7 @@ function getDelete(req, res){
             return res.redirect('/m');//登出成功后跳转到主页
         }
         
-        Post.deleteOne(req.query.id, function(err, post){
+        PostModel.findOneAndRemove({_id: req.query.id}, function(err, post){
           if (err) {
             req.flash('error', err);
             return res.redirect('/m');
@@ -299,7 +352,7 @@ function getDelete(req, res){
 
 function getEdit(req, res){
   
-  Post.getOne(req.query.id, function(err, posts){
+  PostModel.findById(req.query.id, function(err, post){
     if(err){
         req.flash('error', err);
         return res.redirect('/m');
@@ -307,7 +360,7 @@ function getEdit(req, res){
     
     res.render('m_edit', {
       title: "编辑",
-      post: posts[0],
+      post: post,
       user: req.session.user,
       success: req.flash('success').toString(),
       error: req.flash('error').toString()
@@ -318,20 +371,23 @@ function getEdit(req, res){
 
 function postEdit(req, res){
   
-  Post.getOne(req.query.id, function(err, posts){
+  PostModel.findById(req.query.id, function(err, post){
     if(err){
         req.flash('error', err);
         return res.redirect('/m');
     }
-    if(!req.session.user || posts[0].name != req.session.user.name){
+    if(!req.session.user || post.name != req.session.user.name){
         req.flash('error', '权限不足');
         return res.redirect('/m');//登出成功后跳转到主页
     }
         
-    var currentUser = req.session.user;
-    var post = new Post(currentUser.name, req.body.title, req.body.subtitle, req.body.post);
+   
+    post.title = req.body.title;
+    post.subtitle = req.body.subtitle;
+    post.post = req.body.post;
+    post.time = getTime();
     
-    post.update(req.query.id, function (err) {
+    post.save( function (err) {
       if (err) {
         req.flash('error', err); 
         return res.redirect('/m');
@@ -342,40 +398,51 @@ function postEdit(req, res){
   });
 }
 
-function getArticalUser(req, res){
-    Post.getOne(req.query.id, function(err, posts){
-        if(err){
-            req.flash('error', err);
-            return res.redirect('/');
-        }
-        res.render('u_post', {
-       // myurl: 'index', //myrul error caused by c9 env issue
-        post: posts[0],
-        user: req.session.user,
-        success: req.flash('success').toString(),
-        error: req.flash('error').toString()
-      }); 
-        
-    });
-}
 
+
+function getListApi(req, res){
+  var result = {};
+  
+  PostModel.find({}, null, {limit: findLimit, skip: req.query.skip, sort: {time: -1}}, function(err, docs){
+    if(err){
+      console.error(err);
+      return res.end();
+    }
+    
+    var currentNum = req.query.skip + docs.length;
+    
+    PostModel.count(function(err, number){
+   
+      result.docs = docs;
+      if(err){
+        console.log(err);
+        result.end = 1;
+      }
+      else{
+        result.end = (number <= currentNum);
+      }
+      res.send(JSON.stringify(result));
+    })
+  })
+
+}
 
 function route(app){
     app.route('/')
-        .get(getIndex);
+        .get(getIndexU);
     
     app.route('/about')
-        .get(getAbout);
+        .get(getAboutU);
     
     app.route('/contact')
-        .get(getContact);
+        .get(getContactU);
         
     app.route('/artical')
-        .get(getArticalUser);
+        .get(getArticalU);
         
     
     app.route('/m/')
-        .get(getManageIndex);
+        .get(getIndex);
   
     app.route('/m/login')
         .get(checkLogout)
@@ -415,6 +482,9 @@ function route(app){
     app.route('/m/edit')
         .get(getEdit)
         .post(postEdit);
+        
+    app.route('/api/list')
+        .get(getListApi);
         
 
 }

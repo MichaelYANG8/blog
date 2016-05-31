@@ -2,6 +2,8 @@ doctype html
 html(lang='en')
   include u_header.jade
   body
+    script(charset='utf-8', src='/js/jquery.js')
+    script(charset='utf-8', src='/js/blog.js')
     include u_navbar.jade
     
     // Page Header
@@ -19,7 +21,7 @@ html(lang='en')
     // Main Content
     .container
       .row
-        .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
+        .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1#postlist
           each post in posts
             .post-preview
               a(href='/artical?id=' + post._id)
@@ -32,9 +34,16 @@ html(lang='en')
                 a(href='/usr?id=/' + post.name) #{post.name}
                 |  on #{post.time.minute}
             hr
-          // Pager
-          ul.pager
-            li.next
-              a(href='#') Older Posts &rarr;
-    
+        .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1#morebutton
+          if !end
+            // Pager
+            ul.pager
+              li.next
+                a#more(href='#') Older Posts &rarr;
+          else
+            ul.pager
+              li.next
+                a#more(href='#') THE END
+      
     include u_footer.jade
+    
