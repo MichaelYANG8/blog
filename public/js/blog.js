@@ -21,7 +21,7 @@ $(document).ready(function(){
                 html += "   </a>";
                 html += "  <p class='post-meta'>";
                 html += "     Posted by"
-                html += "     <a href='/usr?id=" + post.name + "'>" + post.name + "</a>";
+                html += "     <a href='/user?name=" + post.name + "'>" + post.name + "</a>";
                 html += "     on " + post.time.minute;
                 html += "  </p>";
                 html += "</div>";

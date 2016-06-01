@@ -62,7 +62,7 @@ function getContactU(req, res){
 function getArticalU(req, res){
     PostModel.findById(req.query.id, function(err, post){
         if(err){
-            req.flash('error', err);
+            console.error(err);
             return res.redirect('/');
         }
         res.render('u_post', {
@@ -74,6 +74,26 @@ function getArticalU(req, res){
       }); 
         
     });
+}
+
+function getUserU(req, res){
+  PostModel.find({name: req.query.name},function(err,docs){
+    if(err){
+      console.error(err);
+      return res.redirect('/');
+    }
+    
+    res.render('u_user', {
+       // myurl: 'index', //myrul error caused by c9 env issue
+        name: req.query.name,
+        posts: docs,
+        user: req.session.user,
+        success: req.flash('success').toString(),
+        error: req.flash('error').toString()
+      });
+    
+    
+  })
 }
 
 function checkLogin(req, res, next){
@@ -439,6 +459,9 @@ function route(app){
         
     app.route('/artical')
         .get(getArticalU);
+    
+    app.route('/user')
+        .get(getUserU);
         
     
     app.route('/m/')

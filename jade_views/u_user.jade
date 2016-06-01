@@ -2,20 +2,19 @@ doctype html
 html(lang='en')
   include u_header.jade
   body
-    script(charset='utf-8', src='/js/jquery.js')
-    script(charset='utf-8', src='/js/blog.js')
+   
     include u_navbar.jade
     
     // Page Header
     // Set your background image for this header on the line below.
-    header.intro-header(style="background-image: url('img/home-bg.jpg')")
+    header.intro-header(style="background-image: url('img/about-bg.jpg')")
       .container
         .row
           .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1
             .site-heading
-              h1 这    里
+              h1 #{name}
               hr.small
-              span.subheading 是一个博客，也是一个梦想
+              span.subheading 一个有着梦想的码农.
     
 
     // Main Content
@@ -34,16 +33,7 @@ html(lang='en')
                 a(href='/user?name=' + post.name) #{post.name}
                 |  on #{post.time.minute}
             hr
-        .col-lg-8.col-lg-offset-2.col-md-10.col-md-offset-1#morebutton
-          if !end
-            // Pager
-            ul.pager
-              li.next
-                a#more(href='#') Older Posts &rarr;
-          else
-            ul.pager
-              li.next
-                a#more(href='#') THE END
+        
       
     include u_footer.jade
     
